@@ -73,18 +73,20 @@
     /*=========================================================================
     =                 TODO: fill in these Helper Functions                    =
     =========================================================================*/
+    // helper sum function
+    sum: (array) => _.reduce(array, (a, b) => a + b, 0),
 
     // ROWS - run from left to right
     // --------------------------------------------------------------
     //
     // test if a specific row on this board contains a conflict
-    hasRowConflictAt: function(rowIndex) {
-      return false; // fixme
+    hasRowConflictAt: function (rowIndex) {
+      return this.sum(this.rows()[rowIndex]) > 1;
     },
 
     // test if any rows on this board contain conflicts
-    hasAnyRowConflicts: function() {
-      return false; // fixme
+    hasAnyRowConflicts: function () {
+      return _.some(_.range(this.get('n')), this.hasRowConflictAt.bind(this));
     },
 
 
@@ -93,13 +95,15 @@
     // --------------------------------------------------------------
     //
     // test if a specific column on this board contains a conflict
-    hasColConflictAt: function(colIndex) {
-      return false; // fixme
+    hasColConflictAt: function (colIndex) {
+      //return this.sum(this.attributes, (row) =>  row[colIndex]);
+      //return this.sum(_.map(this.rows(), (row) => row[colIndex])) > 0;
+      return this.sum(_.pluck(this.rows(), colIndex)) > 1;
     },
 
     // test if any columns on this board contain conflicts
-    hasAnyColConflicts: function() {
-      return false; // fixme
+    hasAnyColConflicts: function () {
+      return _.some(_.range(this.get('n')), this.hasColConflictAt.bind(this));
     },
 
 
@@ -108,13 +112,26 @@
     // --------------------------------------------------------------
     //
     // test if a specific major diagonal on this board contains a conflict
-    hasMajorDiagonalConflictAt: function(majorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
+    hasMajorDiagonalConflictAt: function (majorDiagonalColumnIndexAtFirstRow) {
+      const diagonals = [];
+
+      _.each(_.range(this.get('n')), (row) => {
+        _.each(_.range(this.get('n')), (col) => {
+          if (col - row === majorDiagonalColumnIndexAtFirstRow) {
+            diagonals.push(this.rows()[row][col]);
+          }
+        })
+      });
+
+      return this.sum(diagonals) > 1;
     },
 
     // test if any major diagonals on this board contain conflicts
-    hasAnyMajorDiagonalConflicts: function() {
-      return false; // fixme
+    hasAnyMajorDiagonalConflicts: function () {
+      const maxIndex = this.get('n') - 1;
+      const minIndex = -maxIndex;
+
+      return _.some(_.range(minIndex, maxIndex + 1), this.hasMajorDiagonalConflictAt.bind(this));
     },
 
 
@@ -123,13 +140,26 @@
     // --------------------------------------------------------------
     //
     // test if a specific minor diagonal on this board contains a conflict
-    hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
+    hasMinorDiagonalConflictAt: function (minorDiagonalColumnIndexAtFirstRow) {
+      const diagonals = [];
+
+      _.each(_.range(this.get('n')), (row) => {
+        _.each(_.range(this.get('n')), (col) => {
+          if (col + row === minorDiagonalColumnIndexAtFirstRow) {
+            diagonals.push(this.rows()[row][col]);
+          }
+        })
+      });
+
+      return this.sum(diagonals) > 1;
     },
 
     // test if any minor diagonals on this board contain conflicts
-    hasAnyMinorDiagonalConflicts: function() {
-      return false; // fixme
+    hasAnyMinorDiagonalConflicts: function () {
+      const maxIndex = this.get('n') * 2;
+      const minIndex = 0;
+
+      return _.some(_.range(minIndex, maxIndex + 1), this.hasMinorDiagonalConflictAt.bind(this));
     }
 
     /*--------------------  End of Helper Functions  ---------------------*/
@@ -137,9 +167,9 @@
 
   });
 
-  var makeEmptyMatrix = function(n) {
-    return _(_.range(n)).map(function() {
-      return _(_.range(n)).map(function() {
+  var makeEmptyMatrix = function (n) {
+    return _(_.range(n)).map(function () {
+      return _(_.range(n)).map(function () {
         return 0;
       });
     });
